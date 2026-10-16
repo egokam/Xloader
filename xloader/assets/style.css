@@ -1,0 +1,618 @@
+window.xloader-window {
+  background-color: #0a0d15;
+  color: #f3f5ff;
+  font-family: Inter, "Noto Sans", sans-serif;
+}
+
+headerbar.window-titlebar {
+  min-height: 46px;
+  padding: 0 14px;
+  background-color: rgba(10, 13, 22, 0.94);
+  border-bottom: 1px solid rgba(210, 221, 255, 0.08);
+  box-shadow: none;
+}
+
+headerbar.window-titlebar label.titlebar-title {
+  color: rgba(243, 245, 255, 0.83);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.45px;
+}
+
+.app-canvas {
+  background-image: linear-gradient(135deg, #111827 0%, #0b0f19 44%, #0b0e16 100%);
+}
+
+.sidebar {
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  border: 1px solid rgba(225, 234, 255, 0.09);
+  border-radius: 24px;
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.28);
+}
+
+.brand-mark {
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 15px;
+  color: #f4f7ff;
+  background-image: linear-gradient(145deg, #87a8ff, #7767dc 58%, #b974e5);
+  font-size: 25px;
+  font-weight: 800;
+  box-shadow: 0 7px 25px rgba(117, 111, 238, 0.35), inset 0 1px rgba(255, 255, 255, 0.4);
+}
+
+label.brand-name {
+  color: #f4f6ff;
+  font-size: 17px;
+  font-weight: 720;
+  letter-spacing: -0.4px;
+}
+
+label.brand-caption,
+label.sidebar-section-label,
+label.sidebar-footer {
+  color: rgba(202, 211, 237, 0.42);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 1.15px;
+}
+
+label.sidebar-section-label {
+  margin: 0 0 0 10px;
+}
+
+button.nav-button {
+  min-height: 44px;
+  padding: 0 12px;
+  color: rgba(222, 228, 246, 0.62);
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+button.nav-button:hover {
+  color: rgba(245, 247, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.045);
+}
+
+button.nav-button.active {
+  color: #eef2ff;
+  background-image: linear-gradient(110deg, rgba(117, 143, 255, 0.22), rgba(132, 103, 221, 0.12));
+  border-color: rgba(158, 176, 255, 0.15);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.07);
+}
+
+button.nav-button image {
+  color: #a9bbff;
+}
+
+button.nav-button:disabled {
+  opacity: 0.38;
+}
+
+label.nav-label {
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.sidebar-cable-card {
+  padding: 14px;
+  background-image: linear-gradient(145deg, rgba(130, 157, 255, 0.12), rgba(113, 100, 193, 0.055));
+  border: 1px solid rgba(157, 177, 255, 0.12);
+  border-radius: 17px;
+}
+
+.account-card {
+  padding: 13px;
+  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.022));
+  border: 1px solid rgba(225, 234, 255, 0.11);
+  border-radius: 17px;
+}
+
+.account-card image {
+  color: #aebeff;
+}
+
+label.account-heading {
+  color: rgba(202, 213, 248, 0.62);
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: 0.7px;
+}
+
+label.account-id {
+  color: #f0f2ff;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+label.account-meta {
+  color: rgba(212, 220, 241, 0.52);
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+button.account-button {
+  min-height: 28px;
+  padding: 0 11px;
+  color: #e4e9ff;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(235, 239, 255, 0.13);
+  border-radius: 9px;
+  box-shadow: none;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+button.account-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-cable-card image {
+  color: #a9bbff;
+}
+
+label.sidebar-cable-title {
+  color: rgba(222, 229, 255, 0.7);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: 0.8px;
+}
+
+label.sidebar-cable-copy {
+  color: rgba(224, 230, 247, 0.55);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+label.sidebar-footer {
+  margin: 0 0 2px 10px;
+}
+
+.main-scroll {
+  background-color: transparent;
+}
+
+.main-content {
+  padding: 35px 42px 30px;
+}
+
+label.eyebrow {
+  color: #99a9e9;
+  font-size: 9px;
+  font-weight: 780;
+  letter-spacing: 1.2px;
+}
+
+.device-pill {
+  min-height: 31px;
+  padding: 0 12px;
+  background-color: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(225, 234, 255, 0.095);
+  border-radius: 999px;
+}
+
+label.device-dot {
+  color: #f4b96c;
+  font-size: 9px;
+}
+
+label.device-dot.online {
+  color: #76dfb2;
+}
+
+label.device-dot.offline {
+  color: #f4b96c;
+}
+
+label.device-pill-label {
+  color: rgba(236, 240, 255, 0.78);
+  font-size: 10px;
+  font-weight: 620;
+}
+
+label.tool-badge {
+  padding: 7px 10px;
+  color: rgba(195, 210, 255, 0.71);
+  background-color: rgba(123, 151, 255, 0.08);
+  border: 1px solid rgba(144, 167, 255, 0.13);
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: 0.7px;
+}
+
+label.tool-badge-error {
+  color: #ffb3b3;
+  background-color: rgba(219, 83, 94, 0.12);
+  border-color: rgba(255, 125, 135, 0.22);
+}
+
+label.hero-title {
+  color: #f4f6ff;
+  font-size: 37px;
+  font-weight: 760;
+  letter-spacing: -1.55px;
+  line-height: 1.08;
+}
+
+label.hero-copy {
+  color: rgba(215, 223, 245, 0.61);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.glass-card {
+  padding: 21px;
+  background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.082), rgba(255, 255, 255, 0.026) 62%, rgba(128, 147, 206, 0.035));
+  border: 1px solid rgba(227, 235, 255, 0.13);
+  border-radius: 23px;
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.23), inset 0 1px rgba(255, 255, 255, 0.09);
+}
+
+label.step-number {
+  min-width: 37px;
+  min-height: 37px;
+  color: #d8e1ff;
+  background-image: linear-gradient(145deg, rgba(137, 163, 255, 0.22), rgba(134, 99, 211, 0.12));
+  border: 1px solid rgba(169, 188, 255, 0.16);
+  border-radius: 13px;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+label.card-title {
+  color: #f1f3ff;
+  font-size: 17px;
+  font-weight: 690;
+  letter-spacing: -0.35px;
+}
+
+.drop-zone {
+  min-height: 206px;
+  padding: 20px 22px;
+  background-image: linear-gradient(145deg, rgba(147, 169, 255, 0.075), rgba(255, 255, 255, 0.018));
+  border: 1px dashed rgba(174, 190, 255, 0.27);
+  border-radius: 19px;
+}
+
+label.upload-glyph {
+  min-width: 45px;
+  min-height: 45px;
+  color: #d4ddff;
+  background-image: linear-gradient(145deg, rgba(140, 164, 255, 0.23), rgba(141, 110, 230, 0.14));
+  border: 1px solid rgba(195, 207, 255, 0.17);
+  border-radius: 16px;
+  font-size: 25px;
+  font-weight: 400;
+}
+
+label.drop-title {
+  color: rgba(246, 247, 255, 0.92);
+  font-size: 14px;
+  font-weight: 670;
+}
+
+label.drop-copy {
+  color: rgba(216, 224, 246, 0.57);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+button.secondary-button {
+  min-height: 34px;
+  padding: 0 15px;
+  color: #e4e9ff;
+  background-color: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(235, 239, 255, 0.16);
+  border-radius: 11px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.07);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+button.secondary-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(205, 215, 255, 0.29);
+}
+
+.selected-file {
+  padding: 12px;
+  background-color: rgba(129, 160, 255, 0.075);
+  border: 1px solid rgba(157, 180, 255, 0.15);
+  border-radius: 15px;
+}
+
+label.file-type-icon {
+  min-width: 42px;
+  min-height: 42px;
+  color: #d2ddff;
+  background-image: linear-gradient(145deg, rgba(120, 149, 255, 0.28), rgba(137, 101, 220, 0.19));
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+label.selected-file-name {
+  color: #f1f3ff;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+label.selected-file-meta {
+  color: rgba(213, 221, 243, 0.56);
+  font-size: 9px;
+}
+
+button.icon-button {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  color: rgba(222, 229, 248, 0.63);
+  background-color: transparent;
+  border-radius: 9px;
+  box-shadow: none;
+}
+
+button.icon-button:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.09);
+}
+
+separator.card-divider {
+  background-color: rgba(229, 235, 255, 0.10);
+  min-height: 1px;
+}
+
+image.footer-device-icon {
+  color: #abbcff;
+}
+
+label.install-hint {
+  color: rgba(213, 221, 243, 0.57);
+  font-size: 10px;
+}
+
+button.primary-button {
+  min-height: 40px;
+  padding: 0 15px;
+  color: #ffffff;
+  background-image: linear-gradient(115deg, #718cf5, #7c70e5 55%, #9d6ddd);
+  border: 1px solid rgba(225, 229, 255, 0.26);
+  border-radius: 12px;
+  box-shadow: 0 8px 23px rgba(102, 112, 224, 0.31), inset 0 1px rgba(255, 255, 255, 0.29);
+}
+
+button.primary-button:hover {
+  background-image: linear-gradient(115deg, #85a0ff, #8c7ff5 55%, #ae7ded);
+  box-shadow: 0 10px 26px rgba(118, 123, 239, 0.4), inset 0 1px rgba(255, 255, 255, 0.35);
+}
+
+button.primary-button:disabled {
+  color: rgba(237, 239, 255, 0.45);
+  background-image: linear-gradient(115deg, rgba(113, 140, 245, 0.25), rgba(124, 112, 229, 0.2));
+  border-color: rgba(205, 213, 255, 0.08);
+  box-shadow: none;
+}
+
+label.primary-button-label {
+  color: inherit;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+image.device-illustration {
+  min-width: 48px;
+  min-height: 53px;
+  padding: 15px 13px;
+  color: #dce4ff;
+  background-image: linear-gradient(150deg, rgba(137, 165, 255, 0.2), rgba(139, 111, 221, 0.12));
+  border: 1px solid rgba(174, 192, 255, 0.17);
+  border-radius: 15px;
+  font-size: 21px;
+}
+
+label.device-name {
+  color: #f0f2ff;
+  font-size: 12px;
+  font-weight: 680;
+}
+
+label.device-detail {
+  color: rgba(213, 221, 244, 0.55);
+  font-size: 9px;
+}
+
+label.connected-note {
+  padding: 8px 10px;
+  color: #a9edcf;
+  background-color: rgba(71, 183, 133, 0.1);
+  border: 1px solid rgba(111, 221, 171, 0.15);
+  border-radius: 11px;
+  font-size: 9px;
+}
+
+label.device-instructions {
+  color: rgba(216, 224, 246, 0.6);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.usb-tag {
+  min-height: 26px;
+  padding: 0 9px;
+  color: rgba(202, 213, 248, 0.67);
+  background-color: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(224, 232, 255, 0.08);
+  border-radius: 999px;
+}
+
+.usb-tag image {
+  color: #aabbff;
+}
+
+label.usb-tag-label {
+  color: rgba(202, 213, 248, 0.67);
+  font-size: 8px;
+  font-weight: 720;
+  letter-spacing: 0.6px;
+}
+
+label.mini-step-number {
+  min-width: 25px;
+  min-height: 25px;
+  color: #cad5ff;
+  background-color: rgba(138, 158, 255, 0.13);
+  border: 1px solid rgba(163, 180, 255, 0.13);
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+label.mini-step-title {
+  color: rgba(242, 244, 255, 0.87);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+label.mini-step-copy {
+  color: rgba(212, 220, 241, 0.5);
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.progress-card {
+  padding: 17px 20px;
+}
+
+.progress-card image {
+  color: #aebeff;
+}
+
+label.progress-title {
+  color: #f1f3ff;
+  font-size: 12px;
+  font-weight: 680;
+}
+
+label.progress-percent {
+  color: #aebdff;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+label.progress-detail {
+  color: rgba(218, 226, 247, 0.57);
+  font-size: 10px;
+}
+
+progressbar.install-progress-bar trough {
+  min-height: 6px;
+  background-color: rgba(255, 255, 255, 0.09);
+  border: none;
+  border-radius: 999px;
+}
+
+progressbar.install-progress-bar progress {
+  min-height: 6px;
+  background-image: linear-gradient(90deg, #7f9bff, #a178ed);
+  border: none;
+  border-radius: 999px;
+}
+
+button.log-toggle {
+  min-height: 25px;
+  padding: 0 3px;
+  color: rgba(178, 194, 255, 0.75);
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  font-size: 9px;
+}
+
+button.log-toggle:hover {
+  color: #e6eaff;
+}
+
+.log-scroll {
+  background-color: rgba(3, 6, 12, 0.44);
+  border: 1px solid rgba(225, 233, 255, 0.08);
+  border-radius: 11px;
+}
+
+textview.install-log,
+textview.install-log text {
+  color: rgba(218, 226, 248, 0.68);
+  background-color: transparent;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+}
+
+.activity-strip {
+  padding: 13px 17px;
+  background-color: rgba(255, 255, 255, 0.033);
+  border: 1px solid rgba(228, 235, 255, 0.075);
+  border-radius: 17px;
+}
+
+label.activity-sparkle {
+  min-width: 29px;
+  min-height: 29px;
+  color: #c4b4ff;
+  background-color: rgba(157, 124, 235, 0.14);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+label.activity-title {
+  color: rgba(238, 241, 255, 0.79);
+  font-size: 10px;
+  font-weight: 640;
+}
+
+label.activity-copy {
+  color: rgba(209, 218, 242, 0.49);
+  font-size: 9px;
+}
+
+label.activity-time {
+  color: rgba(171, 187, 230, 0.53);
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: 0.7px;
+}
+
+.toast {
+  padding: 12px 17px;
+  background-image: linear-gradient(135deg, rgba(37, 47, 73, 0.96), rgba(29, 32, 54, 0.96));
+  border: 1px solid rgba(211, 222, 255, 0.2);
+  border-radius: 14px;
+  box-shadow: 0 13px 40px rgba(0, 0, 0, 0.42), inset 0 1px rgba(255, 255, 255, 0.11);
+}
+
+.toast image {
+  color: #8ee0b8;
+}
+
+label.toast-label {
+  color: #f3f5ff;
+  font-size: 10px;
+  font-weight: 630;
+}
+
+scrollbar trough {
+  background-color: transparent;
+}
+
+scrollbar slider {
+  min-width: 5px;
+  min-height: 5px;
+  background-color: rgba(208, 218, 247, 0.2);
+  border-radius: 999px;
+}
+
+scrollbar slider:hover {
+  background-color: rgba(208, 218, 247, 0.34);
+}

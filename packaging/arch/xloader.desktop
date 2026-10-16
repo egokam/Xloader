@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Xloader
+Comment=Install and refresh iPhone apps
+Exec=xloader
+Terminal=false
+Type=Application
+Categories=Development;Utility;

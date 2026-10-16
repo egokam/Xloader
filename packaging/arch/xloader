@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+export PYTHONPATH="/usr/lib/xloader${PYTHONPATH:+:$PYTHONPATH}"
+exec /usr/bin/python -m xloader "$@"
