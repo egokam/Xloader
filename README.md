@@ -68,7 +68,7 @@ The GTK window uses a fixed 800 × 420 compact desktop layout with a thin titleb
 
 ## Run from source
 
-Requirements: Python 3, PyGObject with GTK 4.10 or newer, and a USB device service (`usbmuxd`). When running from a source checkout, `XLOADER_XTOOL` can explicitly select a development runtime; otherwise Xloader prefers a bundled runtime before checking `~/.local/bin/xtool` and `PATH`.
+Requirements: Python 3, PyGObject with GTK 4.10 or newer, `libimobiledevice`, and a USB device service (`usbmuxd`). Xloader uses `idevice_id` and `ideviceinfo` to identify connected USB devices. When running from a source checkout, `XLOADER_XTOOL` can explicitly select a development runtime; otherwise Xloader prefers a bundled runtime before checking `~/.local/bin/xtool` and `PATH`.
 
 From the repository root:
 
@@ -87,6 +87,14 @@ python3 scripts/dev-preview.py
 ```
 
 Stylesheet changes apply to the open window. Changes to Python files restart the window automatically. Close the app window to stop the watcher, or press `Ctrl+C` in the terminal. The signing engine is optional for previewing the interface; without xtool, install actions remain unavailable.
+
+In preview mode, choose **Reference image…** to overlay a design image. Drag the vertical divider to compare the image on the left with the live UI on the right, and use the slider to adjust its opacity. The selected image, opacity, and divider position are saved under the user cache directory and restored after Python-triggered restarts. You can also preload an image on launch:
+
+```sh
+XLOADER_REFERENCE_IMAGE=/path/to/design.png python3 scripts/dev-preview.py
+```
+
+For pixel-accurate alignment, use an image exported at the app window size (800 × 427).
 
 ## Install on Arch Linux, Garuda, or Manjaro
 

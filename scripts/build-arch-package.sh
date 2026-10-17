@@ -62,7 +62,7 @@ pkgdesc='Install and refresh iPhone apps with a bundled signing engine'
 arch=('$machine_arch')
 url='https://github.com/egokam/Xloader'
 license=('custom')
-depends=('gtk4>=4.10' 'python' 'python-gobject' 'usbmuxd')
+depends=('gtk4>=4.10' 'python' 'python-gobject' 'libimobiledevice' 'usbmuxd')
 options=('!strip')
 source=(
     "xloader-source.tar.gz::file://$source_archive"

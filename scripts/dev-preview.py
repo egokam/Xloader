@@ -46,6 +46,7 @@ def main() -> int:
     environment = os.environ.copy()
     environment["XLOADER_DEV_PREVIEW"] = "1"
     print("Xloader preview: CSS reloads live; Python edits restart the window.", flush=True)
+    print("Load a reference image, drag the split line, and adjust its opacity in the window.", flush=True)
     print("Close the app to stop. Press Ctrl+C here to stop the preview.", flush=True)
 
     try:

@@ -47,7 +47,10 @@ class XloaderApp(Gtk.Application):
             if self._development_preview:
                 self._watch_stylesheet(css_path)
 
-        window = MainWindow(self)
+        window = MainWindow(
+            self,
+            development_preview=self._development_preview,
+        )
         window.present()
 
     def _watch_stylesheet(self, css_path: Path) -> None:

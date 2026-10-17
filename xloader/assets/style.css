@@ -12,7 +12,7 @@ window.xloader-window {
 headerbar.window-titlebar {
   min-height: 39px;
   padding: 0 12px;
-  background-color: #777579;
+  background-color: #666669;
   background-image:
     linear-gradient(
       to right,
@@ -102,4 +102,312 @@ headerbar.window-titlebar button.traffic-dot-button:active label.traffic-dot {
   background-color: #303030;
   background-image: none;
   border-radius: 0 0 13px 13px;
+}
+
+button.ipa-select-button {
+  padding: 0;
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+button.ipa-select-button:hover,
+button.ipa-select-button:active,
+button.ipa-select-button:focus {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+  outline-style: none;
+}
+
+box.ipa-placeholder-area {
+  background-color: #4a4a4a;
+  background-image: none;
+  border: 1px solid #59595b;
+}
+
+label.ipa-name-label {
+  color: #77777a;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+label.device-title {
+  color: #f2f2f2;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+label.apple-id-title {
+  color: #f2f2f2;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+dropdown.device-dropdown {
+  min-width: 350px;
+  min-height: 32px;
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+}
+
+dropdown.device-dropdown button {
+  min-height: 30px;
+  padding: 0 9px;
+  color: #f1f1f1;
+  background-color: #777579;
+  background-image: none;
+  border: 1px solid #88868a;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+dropdown.device-dropdown button:hover,
+dropdown.device-dropdown button:focus {
+  background-color: #666669;
+  box-shadow: none;
+  outline-style: none;
+}
+
+dropdown.device-dropdown label {
+  color: #f1f1f1;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+dropdown.device-dropdown arrow {
+  color: #f1f1f1;
+}
+
+box.apple-id-control {
+  min-width: 566px;
+  min-height: 40px;
+  padding: 3px;
+  background-color: #1f1e23;
+  background-image: none;
+  border: 2px solid #7169b5;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(95, 148, 255, 0.25);
+}
+
+entry.apple-id-field {
+  min-height: 30px;
+  padding: 0 8px;
+  color: #aaa9b2;
+  caret-color: transparent;
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  border-radius: 4px;
+  box-shadow: none;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 14px;
+}
+
+entry.apple-id-field:focus {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  outline-style: none;
+}
+
+entry.apple-id-field placeholder {
+  color: #85848e;
+  opacity: 1;
+}
+
+menubutton.apple-id-menu-button {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+  color: #f1f1f1;
+  background-color: #6259a9;
+  background-image: none;
+  border: 1px solid #8178ca;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+menubutton.apple-id-menu-button:hover,
+menubutton.apple-id-menu-button:active {
+  background-color: #6e64b8;
+  box-shadow: none;
+}
+
+menubutton.apple-id-menu-button image {
+  color: #f1f1f1;
+}
+
+popover contents box.apple-id-actions {
+  min-width: 150px;
+  padding: 6px;
+  background-color: #38383b;
+}
+
+popover button.apple-id-action {
+  min-height: 30px;
+  padding: 0 9px;
+  color: #eeeeef;
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  border-radius: 5px;
+  box-shadow: none;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 13px;
+}
+
+popover button.apple-id-action:hover {
+  background-color: #55545a;
+}
+
+box.preview-tools {
+  padding: 4px 7px;
+  background-color: rgba(25, 25, 28, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.42);
+}
+
+button.preview-tool-button {
+  min-height: 25px;
+  padding: 0 8px;
+  color: #f1f1f1;
+  background-color: #4a4a4e;
+  background-image: none;
+  border: 1px solid #69696d;
+  border-radius: 5px;
+  box-shadow: none;
+  font-size: 11px;
+}
+
+label.preview-opacity-label {
+  min-width: 30px;
+  color: #ededf0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+scale.preview-opacity-scale {
+  min-height: 22px;
+  padding: 0;
+}
+
+scale.preview-opacity-scale trough {
+  min-height: 3px;
+  background-color: #5c5b61;
+  border-radius: 99px;
+}
+
+scale.preview-opacity-scale highlight {
+  background-color: #8c82ed;
+  border-radius: 99px;
+}
+
+scale.preview-opacity-scale slider {
+  min-width: 11px;
+  min-height: 11px;
+  background-color: #f4f3ff;
+  border: 1px solid #a49bef;
+  border-radius: 99px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+box.preview-divider-hitbox {
+  background-color: transparent;
+}
+
+box.preview-divider-line {
+  min-width: 1px;
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.95);
+}
+
+button.device-icon-button {
+  min-width: 25px;
+  min-height: 25px;
+  padding: 0;
+  color: #272727;
+  background-color: #68686a;
+  background-image: none;
+  border: 1px solid #4e4e50;
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+button.device-icon-button image {
+  color: #272727;
+}
+
+button.device-icon-button:hover {
+  background-color: #747477;
+  box-shadow: none;
+}
+
+button.device-icon-button:focus {
+  outline-style: none;
+  box-shadow: none;
+}
+
+button.start-button {
+  padding: 0 8px;
+  color: #f5f5f5;
+  background-color: #68686a;
+  background-image: none;
+  border: 1px solid #7a7a7d;
+  border-radius: 7px;
+  box-shadow: none;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+button.start-button label {
+  color: #f5f5f5;
+  font-family: Inter, "Noto Sans", sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+button.start-button:hover {
+  background-color: #68686a;
+  box-shadow: none;
+}
+
+button.start-button:focus {
+  outline-style: none;
+  box-shadow: none;
+}
+
+button.refresh-button {
+  padding: 0;
+  color: #292929;
+  background-color: #666669;
+  background-image: none;
+  border: 1px solid #848485;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+button.refresh-button image {
+  color: #292929;
+}
+
+button.refresh-button:hover {
+  background-color: #666669;
+  box-shadow: none;
+}
+
+button.refresh-button:focus {
+  outline-style: none;
+  box-shadow: none;
 }
