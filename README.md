@@ -1,8 +1,8 @@
 # Xloader
 
-Xloader is a Linux-first desktop companion for building, signing, installing, and managing iOS apps on Apple devices.
+Xloader is a Linux-first desktop companion for signing, installing, and refreshing iOS apps on Apple devices.
 
-The goal is to make the Linux-to-iPhone workflow understandable and reliable, with xtool as the first integration point. Xloader is a separate project from MusicNative; MusicNative can serve as an early app for exercising the development workflow.
+The goal is to make the Linux-to-iPhone workflow understandable and reliable, with xtool as the first integration point.
 
 ## First milestone: cable-based installer
 
@@ -52,12 +52,12 @@ Wireless refresh is out of the current MVP. The chosen workflow uses a USB cable
 
 - Use Python 3 with GTK 4 for the Linux desktop shell and native file selection.
 - Call xtool as a child process for USB device discovery and IPA installation; keep output streaming so progress stays visible.
-- Use translucent surfaces, soft gradients, layered highlights, and short fade transitions for the Liquid Glass-inspired visual style.
+- Use the compact Sideloadly-inspired layout, charcoal surfaces, gray controls, a purple Apple ID focus edge, and short fade transitions.
 - Keep the first version dependency-light and runnable from the cloned repository.
 
 ### Current prototype
 
-The GTK window currently detects an iPhone over USB, lets you choose an IPA, and runs `xtool install --usb` while showing streamed deployment stages and sanitized logs. Its account card shows the saved Apple ID, team, and token expiry. Sign-in opens xtool's login flow in a terminal, while sign-out runs through xtool; Xloader does not collect or store Apple ID passwords. Install results use concise dialogs, with full sanitized output available on request. Refreshing currently means selecting the IPA again and reinstalling it. Installed-app inventory and automatic refresh scheduling are future work.
+The GTK window uses a fixed 800 × 420 compact desktop layout with a thin titlebar and charcoal Sideloadly-inspired controls. It detects an iPhone over USB, lets you browse for or drop an IPA, and runs `xtool install --usb` while showing streamed deployment stages and sanitized logs. The Apple ID field shows the saved account, team, and token expiry. Sign-in opens xtool's login flow in a terminal, while sign-out runs through xtool; Xloader does not collect or store Apple ID passwords. Install results use concise dialogs, with full sanitized output available on request. Refreshing currently means selecting the IPA again and reinstalling it. Installed-app inventory and automatic refresh scheduling are future work.
 
 ## Project principles
 
@@ -77,6 +77,16 @@ python3 -m xloader
 ```
 
 Set `XLOADER_XTOOL` to override the runtime path during development.
+
+### Live development preview
+
+Run the preview watcher while editing the interface:
+
+```sh
+python3 scripts/dev-preview.py
+```
+
+Stylesheet changes apply to the open window. Changes to Python files restart the window automatically. Close the app window to stop the watcher, or press `Ctrl+C` in the terminal. The signing engine is optional for previewing the interface; without xtool, install actions remain unavailable.
 
 ## Install on Arch Linux, Garuda, or Manjaro
 
