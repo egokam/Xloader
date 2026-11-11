@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run Xloader with CSS live reload and automatic Python restarts."""
+"""Run Xloader with stylesheet live reload and automatic Python restarts."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def wait_for_source_change(baseline: dict[Path, tuple[int, int, int]]) -> None:
 def main() -> int:
     environment = os.environ.copy()
     environment["XLOADER_DEV_PREVIEW"] = "1"
-    print("Xloader preview: CSS reloads live; Python edits restart the window.", flush=True)
+    print("Xloader preview: styles reload live; Python edits restart the window.", flush=True)
     print("Load a reference image, drag the split line, and adjust its opacity in the window.", flush=True)
     print("Close the app to stop. Press Ctrl+C here to stop the preview.", flush=True)
 

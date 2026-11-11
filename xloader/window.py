@@ -1,759 +1,689 @@
 from __future__ import annotations
 
-import json
+import math
 import os
 import threading
 from pathlib import Path
 
-import gi
-
-gi.require_version("Gdk", "4.0")
-gi.require_version("Gtk", "4.0")
-gi.require_version("Graphene", "1.0")
-gi.require_version("Pango", "1.0")
-from gi.repository import Gdk, GLib, Graphene, Gtk, Pango
+from PySide6.QtCore import Property, QPointF, QRectF, Qt, QTimer, QUrl, Signal
+from PySide6.QtGui import (
+    QColor,
+    QDesktopServices,
+    QFont,
+    QPainter,
+    QPainterPath,
+    QPen,
+    QPolygonF,
+    QTransform,
+)
+from PySide6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QFileDialog,
+    QFrame,
+    QLabel,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QWidget,
+)
 
 from .device import DeviceInfo, DeviceService
 from .xtool import AuthStatus, XToolService
 
+WIDTH, HEIGHT = 800, 427
+TITLEBAR_H = 38
+STYLESHEET = Path(__file__).parent / "assets" / "style.css"
+APP_TITLE = "Xloader"
+PURPLE = QColor("#5b57d1")
+AA = QPainter.RenderHint.Antialiasing
 
 NO_DEVICE_TEXT = "No device detected, connect your iDevice with a cable."
 
 
-class ReferenceImageLayer(Gtk.Widget):
-    """Draw the left side of a reference screenshot over the live interface."""
+def _pen(color, width: float = 1.8):
+    pen = QPen(color, width)
+    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+    return pen
 
-    def __init__(self, titlebar: bool = False) -> None:
+
+def draw_gear(p, c):
+    path = QPainterPath()
+    path.addEllipse(QPointF(0, 0), 6.2, 6.2)
+    for i in range(4):
+        tooth = QPainterPath()
+        tooth.addRoundedRect(QRectF(-2.2, -8.6, 4.4, 17.2), 1, 1)
+        path = path.united(QTransform().rotate(45 * i).map(tooth))
+    hole = QPainterPath()
+    hole.addEllipse(QPointF(0, 0), 2.6, 2.6)
+    p.fillPath(path.subtracted(hole), c)
+
+
+def draw_link(p, c):
+    p.setPen(_pen(c, 2.0))
+    p.setBrush(Qt.BrushStyle.NoBrush)
+    p.rotate(-45)
+    p.drawRoundedRect(QRectF(-10, -3.6, 11, 7.2), 3.6, 3.6)
+    p.drawRoundedRect(QRectF(-1, -3.6, 11, 7.2), 3.6, 3.6)
+
+
+def draw_phone(p, c):
+    p.setPen(_pen(c, 1.7))
+    p.setBrush(Qt.BrushStyle.NoBrush)
+    p.drawRoundedRect(QRectF(-5, -8.5, 10, 17), 2.2, 2.2)
+    p.drawLine(QPointF(-1.8, 6), QPointF(1.8, 6))
+
+
+def draw_eye_slash(p, c):
+    path = QPainterPath()
+    path.moveTo(-9.5, 0)
+    path.quadTo(0, -10, 9.5, 0)
+    path.quadTo(0, 10, -9.5, 0)
+    p.setPen(_pen(c, 1.8))
+    p.setBrush(Qt.BrushStyle.NoBrush)
+    p.drawPath(path)
+    p.drawEllipse(QPointF(0, 0), 2.6, 2.6)
+    p.drawLine(QPointF(-8, -8), QPointF(8, 8))
+
+
+def draw_people(p, c):
+    p.setPen(Qt.PenStyle.NoPen)
+    p.setBrush(c)
+    p.drawEllipse(QPointF(-3.5, -3.6), 3, 3)
+    p.drawEllipse(QPointF(4.2, -3.0), 2.5, 2.5)
+    body = QPainterPath()
+    body.addRoundedRect(QRectF(-8.5, 0.5, 10, 7), 3.5, 3.5)
+    body.addRoundedRect(QRectF(2, 1.5, 7, 6), 3, 3)
+    p.drawPath(body)
+
+
+def draw_flag(p, c):
+    p.setPen(_pen(c, 1.8))
+    p.drawLine(QPointF(-5, -8), QPointF(-5, 8))
+    flag = QPolygonF(
+        [
+            QPointF(-5, -8),
+            QPointF(7, -8),
+            QPointF(4, -3.5),
+            QPointF(7, 1),
+            QPointF(-5, 1),
+        ]
+    )
+    p.setPen(Qt.PenStyle.NoPen)
+    p.setBrush(c)
+    p.drawPolygon(flag)
+
+
+def draw_refresh(p, c):
+    r = 7.0
+    p.setPen(_pen(c, 2.0))
+    p.setBrush(Qt.BrushStyle.NoBrush)
+    p.drawArc(QRectF(-r, -r, 2 * r, 2 * r), 40 * 16, 280 * 16)
+    a = math.radians(320)
+    px, py = r * math.cos(a), -r * math.sin(a)
+    tx, ty = -math.sin(a), -math.cos(a)
+    nx, ny = -ty, tx
+    head = QPolygonF(
+        [
+            QPointF(px + tx * 4.4, py + ty * 4.4),
+            QPointF(px + nx * 3.8, py + ny * 3.8),
+            QPointF(px - nx * 3.8, py - ny * 3.8),
+        ]
+    )
+    p.setPen(Qt.PenStyle.NoPen)
+    p.setBrush(c)
+    p.drawPolygon(head)
+
+
+def draw_updown(p, c):
+    p.setPen(_pen(c, 2.0))
+    p.drawLine(QPointF(-3.5, 8), QPointF(-3.5, -4))
+    p.drawLine(QPointF(3.5, -8), QPointF(3.5, 4))
+    p.setPen(Qt.PenStyle.NoPen)
+    p.setBrush(c)
+    p.drawPolygon(QPolygonF([QPointF(-3.5, -9.5), QPointF(-7.8, -3.5), QPointF(0.8, -3.5)]))
+    p.drawPolygon(QPolygonF([QPointF(3.5, 9.5), QPointF(-0.8, 3.5), QPointF(7.8, 3.5)]))
+
+
+ICONS = {
+    "gear": draw_gear,
+    "link": draw_link,
+    "phone": draw_phone,
+    "eye": draw_eye_slash,
+    "people": draw_people,
+    "flag": draw_flag,
+    "refresh": draw_refresh,
+    "updown": draw_updown,
+}
+
+
+class IconButton(QPushButton):
+    def __init__(self, kind, dx=0.0, parent=None):
+        super().__init__(parent)
+        self._kind = kind
+        self._dx = dx
+        self._icon_color = QColor("#f0f0f0")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+    def _get_icon_color(self):
+        return self._icon_color
+
+    def _set_icon_color(self, color):
+        self._icon_color = QColor(color)
+        self.update()
+
+    iconColor = Property(QColor, _get_icon_color, _set_icon_color)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        p = QPainter(self)
+        p.setRenderHint(AA)
+        if not self.isEnabled():
+            p.setOpacity(0.35)
+        p.translate(self.width() / 2 + self._dx, self.height() / 2)
+        ICONS[self._kind](p, self._icon_color)
+
+
+class PurpleCombo(QComboBox):
+    def __init__(self, chevrons="updown", btn_w=21, margin_x=3, margin_y=2, parent=None):
+        super().__init__(parent)
+        self._chev = chevrons
+        self._bw = btn_w
+        self._mx = margin_x
+        self._my = margin_y
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        p = QPainter(self)
+        p.setRenderHint(AA)
+        w, h = self.width(), self.height()
+        rect = QRectF(w - self._bw - self._mx, self._my, self._bw, h - 2 * self._my)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(PURPLE)
+        p.drawRoundedRect(rect, 4, 4)
+        p.translate(rect.center())
+        p.setPen(_pen(QColor("white"), 1.8))
+        p.setBrush(Qt.BrushStyle.NoBrush)
+        if self._chev == "updown":
+            p.drawPolyline(QPolygonF([QPointF(-3, -1.6), QPointF(0, -4.6), QPointF(3, -1.6)]))
+            p.drawPolyline(QPolygonF([QPointF(-3, 1.6), QPointF(0, 4.6), QPointF(3, 1.6)]))
+        else:
+            p.drawPolyline(QPolygonF([QPointF(-3.6, -1.6), QPointF(0, 2.0), QPointF(3.6, -1.6)]))
+
+
+class IpaIcon(QFrame):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("ipaBox")
+        self._pixmap = None
+
+    def set_pixmap(self, pixmap):
+        self._pixmap = pixmap
+        self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        p = QPainter(self)
+        p.setRenderHints(AA | QPainter.RenderHint.SmoothPixmapTransform)
+        tile = QRectF(7, 18, 104, 106)
+        if self._pixmap is not None:
+            p.drawPixmap(tile.toRect(), self._pixmap)
+        else:
+            p.fillRect(tile, QColor("#3f5bff"))
+            p.save()
+            p.translate(tile.center())
+            p.rotate(12)
+            outer = QPainterPath()
+            outer.addRoundedRect(QRectF(-28, -28, 56, 56), 5, 5)
+            hole = QPainterPath()
+            hole.addRoundedRect(QRectF(-10, -10, 20, 20), 1.5, 1.5)
+            p.fillPath(outer.subtracted(hole), QColor("white"))
+            p.restore()
+        p.setPen(_pen(QColor("white"), 1.4))
+        p.setBrush(QColor(0, 0, 0, 90))
+        p.drawRoundedRect(QRectF(7, 8, 14, 11), 2.5, 2.5)
+        p.setBrush(QColor("white"))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawEllipse(QPointF(11.5, 12), 1.4, 1.4)
+        p.drawEllipse(QPointF(17, 15.5), 1.1, 1.1)
+
+
+class BrandIcon(QWidget):
+    def __init__(self, kind, parent=None):
+        super().__init__(parent)
+        self._kind = kind
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        p = QPainter(self)
+        p.setRenderHint(AA)
+        bg = QColor("#f5f5f6")
+        white = QColor("#ffffff")
+        p.translate(self.width() / 2, self.height() / 2)
+        if self._kind == "twitter":
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(white)
+            p.drawEllipse(QPointF(0, 0), 6.2, 6.2)
+            p.setPen(_pen(QColor("#2c2c2c"), 1.1))
+            p.drawLines([QPointF(-2.8, 2.0), QPointF(-0.2, -2.2), QPointF(4.2, -2.2)])
+            p.drawLine(QPointF(-2.2, -1.2), QPointF(0.0, 2.0))
+        elif self._kind == "reddit":
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(white)
+            p.drawEllipse(QPointF(0, 0), 7.0, 7.0)
+            p.setBrush(QColor("#f8f8f8"))
+            p.drawEllipse(QPointF(-2.4, 1.2), 1.1, 1.1)
+            p.drawEllipse(QPointF(2.4, 1.2), 1.1, 1.1)
+            p.setBrush(bg)
+            p.drawEllipse(QPointF(0, 2), 5.2, 3.2)
+            p.setPen(_pen(QColor("#2c2c2c"), 1.1))
+            p.drawLine(QPointF(0, -2.4), QPointF(1.4, -5.4))
+            p.drawLine(QPointF(1.4, -5.4), QPointF(4.4, -5.6))
+        else:
+            p.drawRect(QRectF(-5.2, -6, 2.4, 12))
+            p.drawEllipse(QPointF(1.6, -1.8), 4.2, 4.2)
+
+
+class ClickLabel(QLabel):
+    clicked = Signal()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mouseReleaseEvent(event)
+
+
+class SideloadlyWindow(QWidget):
+    def __init__(self, development_preview: bool = False):
         super().__init__()
-        self.texture: Gdk.Texture | None = None
-        self.opacity = 0.45
-        self.divider_x = 400
-        self.titlebar = titlebar
-        self.set_can_target(False)
-        self.set_halign(Gtk.Align.FILL)
-        self.set_valign(Gtk.Align.FILL)
-        self.set_hexpand(True)
-        self.set_vexpand(True)
-
-    def do_measure(
-        self,
-        _orientation: Gtk.Orientation,
-        _for_size: int,
-    ) -> tuple[int, int, int, int]:
-        return 0, 0, -1, -1
-
-    def do_snapshot(self, snapshot: Gtk.Snapshot) -> None:
-        if self.texture is None:
-            return
-
-        width = self.get_width()
-        height = self.get_height()
-        root = self.get_root()
-        if width <= 0 or height <= 0 or not isinstance(root, Gtk.Window):
-            return
-
-        frame_width = root.get_width()
-        frame_height = root.get_height()
-        titlebar_widget = root.get_titlebar()
-        titlebar_height = titlebar_widget.get_height() if titlebar_widget else 0
-        image_y = 0 if self.titlebar else -titlebar_height
-
-        full_bounds = Graphene.Rect().init(
-            0,
-            0,
-            float(width),
-            float(height),
-        )
-        image_bounds = Graphene.Rect().init(
-            0,
-            float(image_y),
-            float(frame_width),
-            float(frame_height),
-        )
-        comparison_bounds = Graphene.Rect().init(
-            0,
-            0,
-            float(min(self.divider_x, width)),
-            float(height),
-        )
-
-        snapshot.push_clip(full_bounds)
-        snapshot.push_opacity(self.opacity)
-        snapshot.push_clip(comparison_bounds)
-        snapshot.append_texture(self.texture, image_bounds)
-        snapshot.pop()
-        snapshot.pop()
-        snapshot.pop()
-
-
-class MainWindow(Gtk.ApplicationWindow):
-    def __init__(
-        self,
-        application: Gtk.Application,
-        development_preview: bool = False,
-    ) -> None:
-        super().__init__(application=application, title="XLoader")
-        self.set_default_size(800, 427)
-        self.set_size_request(800, 427)
-        self.set_resizable(False)
-        self.add_css_class("xloader-window")
+        self._development_preview = development_preview
         self._device_service = DeviceService()
+        self._xtool_service = XToolService()
         self._devices: list[DeviceInfo] = []
         self._selected_device: DeviceInfo | None = None
-        self._hide_sensitive_device_info = True
-        self._device_scan_running = False
-        self._updating_device_dropdown = False
-        self._pairing_in_progress = False
-        self._xtool_service = XToolService()
-        self._auth_status_running = False
-        self._auth_signed_in = False
-        self._development_preview = development_preview
-        self._preview_state_path = Path(
-            os.environ.get(
-                "XLOADER_DEV_PREVIEW_STATE",
-                str(Path(GLib.get_user_cache_dir()) / "xloader" / "dev-preview.json"),
-            )
-        ).expanduser()
-        self._preview_state = self._read_preview_state()
-        self._preview_opacity = self._bounded_number(
-            self._preview_state.get("opacity", 0.45),
-            fallback=0.45,
-            minimum=0.0,
-            maximum=1.0,
-        )
-        self._preview_divider_x = int(
-            self._bounded_number(
-                self._preview_state.get("divider_x", 400),
-                fallback=400,
-                minimum=1,
-                maximum=799,
-            )
-        )
-        saved_reference = self._preview_state.get("image_path")
-        if not isinstance(saved_reference, str):
-            saved_reference = None
-        self._preview_reference_path = (
-            saved_reference or os.environ.get("XLOADER_REFERENCE_IMAGE")
-        )
-        self._preview_drag_origin = self._preview_divider_x
-        self._build_window()
-        self._schedule_device_scan()
-        self._device_scan_source = GLib.timeout_add_seconds(3, self._schedule_device_scan)
-        self._schedule_auth_status()
-        self._auth_scan_source = GLib.timeout_add_seconds(15, self._schedule_auth_status)
-
-    def _build_window(self) -> None:
-        titlebar = Gtk.HeaderBar()
-        titlebar.add_css_class("window-titlebar")
-        titlebar.set_show_title_buttons(False)
-        titlebar.set_title_widget(Gtk.Label(label=""))
-
-        traffic_lights = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=11)
-        traffic_lights.add_css_class("traffic-lights")
-        titlebar.pack_end(traffic_lights)
-
-        minimize_button = Gtk.Button()
-        minimize_button.add_css_class("traffic-dot-button")
-        minimize_button.set_tooltip_text("Minimize XLoader")
-        minimize_button.connect("clicked", lambda _button: self.minimize())
-        minimize_dot = Gtk.Label(label="")
-        minimize_dot.set_size_request(16, 16)
-        minimize_dot.set_halign(Gtk.Align.CENTER)
-        minimize_dot.set_valign(Gtk.Align.CENTER)
-        minimize_dot.add_css_class("traffic-dot")
-        minimize_dot.add_css_class("minimize-dot")
-        minimize_button.set_child(minimize_dot)
-        traffic_lights.append(minimize_button)
-
-        close_button = Gtk.Button()
-        close_button.add_css_class("traffic-dot-button")
-        close_button.set_tooltip_text("Close XLoader")
-        close_button.connect("clicked", lambda _button: self.close())
-        close_dot = Gtk.Label(label="")
-        close_dot.set_size_request(16, 16)
-        close_dot.set_halign(Gtk.Align.CENTER)
-        close_dot.set_valign(Gtk.Align.CENTER)
-        close_dot.add_css_class("traffic-dot")
-        close_dot.add_css_class("close-dot")
-        close_button.set_child(close_dot)
-        traffic_lights.append(close_button)
-
-        if self._development_preview:
-            titlebar_overlay = Gtk.Overlay()
-            titlebar_overlay.set_child(titlebar)
-            self._titlebar_reference_layer = ReferenceImageLayer(titlebar=True)
-            self._titlebar_reference_layer.opacity = self._preview_opacity
-            self._titlebar_reference_layer.divider_x = self._preview_divider_x
-            titlebar_overlay.add_overlay(self._titlebar_reference_layer)
-            self._titlebar_divider_hitbox = self._create_preview_divider()
-            titlebar_overlay.add_overlay(self._titlebar_divider_hitbox)
-            self.set_titlebar(titlebar_overlay)
-        else:
-            self.set_titlebar(titlebar)
-
-        surface = Gtk.Fixed()
-        surface.add_css_class("empty-surface")
-        if self._development_preview:
-            self._preview_overlay = Gtk.Overlay()
-            self._preview_overlay.set_child(surface)
-            self._body_reference_layer = ReferenceImageLayer()
-            self._body_reference_layer.opacity = self._preview_opacity
-            self._body_reference_layer.divider_x = self._preview_divider_x
-            self._preview_overlay.add_overlay(self._body_reference_layer)
-            self._body_divider_hitbox = self._create_preview_divider()
-            self._preview_overlay.add_overlay(self._body_divider_hitbox)
-            self._add_preview_tools(self._preview_overlay)
-            self.set_child(self._preview_overlay)
-        else:
-            self.set_child(surface)
-
-        ipa_button = Gtk.Button()
-        ipa_button.add_css_class("ipa-select-button")
-        ipa_button.set_tooltip_text("Choose an IPA file")
-
-        ipa_x, ipa_y = 25, 28
-        ipa_name_gap = 21
-        ipa_placeholder = Gtk.Box()
-        ipa_placeholder.add_css_class("ipa-placeholder-area")
-        ipa_placeholder.set_size_request(114, 142)
-
-        ipa_image = Gtk.Picture.new_for_filename(
-            str(Path(__file__).parent / "assets" / "ipa.png")
-        )
-        ipa_image.set_can_shrink(True)
-        ipa_image.set_content_fit(Gtk.ContentFit.CONTAIN)
-        ipa_image.set_size_request(114, 142)
-        ipa_image.set_hexpand(True)
-        ipa_image.set_vexpand(True)
-        ipa_placeholder.append(ipa_image)
-        ipa_button.set_child(ipa_placeholder)
-        ipa_button.connect("clicked", self._choose_ipa_file)
-        ipa_button.set_size_request(116, 142)
-        surface.put(ipa_button, ipa_x, ipa_y)
-
-        self.ipa_name_label = Gtk.Label(label="<none>")
-        self.ipa_name_label.add_css_class("ipa-name-label")
-        self.ipa_name_label.set_size_request(116, 22)
-        self.ipa_name_label.set_max_width_chars(14)
-        self.ipa_name_label.set_ellipsize(Pango.EllipsizeMode.END)
-        self.ipa_name_label.set_halign(Gtk.Align.CENTER)
-        surface.put(self.ipa_name_label, ipa_x, ipa_y + 142 + ipa_name_gap)
-
-        device_title = Gtk.Label(label="iDevice:")
-        device_title.add_css_class("device-title")
-        device_title.set_halign(Gtk.Align.START)
-        surface.put(device_title, 178, 24)
-
-        self.device_dropdown = Gtk.DropDown.new(
-            Gtk.StringList.new([NO_DEVICE_TEXT]),
-            None,
-        )
-        self.device_dropdown.add_css_class("device-dropdown")
-        self.device_dropdown.set_size_request(350, 32)
-        self.device_dropdown.connect("notify::selected", self._on_device_selected)
-        surface.put(self.device_dropdown, 185, 80)
-
-        self.copy_device_button = self._make_device_button(
-            "edit-copy-symbolic",
-            "Copy device UDID",
-            self._copy_device_udid,
-        )
-        surface.put(self.copy_device_button, 627, 62)
-
-        self.repair_device_button = self._make_device_button(
-            "smartphone-symbolic",
-            "Re-pair connected iDevice",
-            self._repair_device_pairing,
-        )
-        surface.put(self.repair_device_button, 681, 62)
-
-        self.privacy_button = self._make_device_button(
-            "view-conceal-symbolic",
-            "Show sensitive device information",
-            self._toggle_device_privacy,
-        )
-        surface.put(self.privacy_button, 735, 62)
-
-        apple_id_title = Gtk.Label(label="Apple ID:")
-        apple_id_title.add_css_class("apple-id-title")
-        apple_id_title.set_halign(Gtk.Align.START)
-        surface.put(apple_id_title, 201, 119)
-
-        apple_id_control = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        apple_id_control.add_css_class("apple-id-control")
-        apple_id_control.set_size_request(566, 40)
-
-        self.apple_id_entry = Gtk.Entry()
-        self.apple_id_entry.add_css_class("apple-id-field")
-        self.apple_id_entry.set_placeholder_text("Not signed in")
-        self.apple_id_entry.set_editable(False)
-        self.apple_id_entry.set_hexpand(True)
-        apple_id_control.append(self.apple_id_entry)
-
-        self.apple_id_menu = Gtk.MenuButton()
-        self.apple_id_menu.add_css_class("apple-id-menu-button")
-        self.apple_id_menu.set_tooltip_text("Apple ID account options")
-        arrow = Gtk.Image.new_from_icon_name("pan-down-symbolic")
-        arrow.set_pixel_size(16)
-        self.apple_id_menu.set_child(arrow)
-
-        account_menu = Gtk.Popover()
-        account_actions = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        account_actions.add_css_class("apple-id-actions")
-
-        self.sign_in_button = Gtk.Button(label="Sign in…")
-        self.sign_in_button.add_css_class("apple-id-action")
-        self.sign_in_button.connect("clicked", self._sign_in_to_apple)
-        account_actions.append(self.sign_in_button)
-
-        self.sign_out_button = Gtk.Button(label="Sign out")
-        self.sign_out_button.add_css_class("apple-id-action")
-        self.sign_out_button.set_sensitive(False)
-        self.sign_out_button.connect("clicked", self._sign_out_of_apple)
-        account_actions.append(self.sign_out_button)
-
-        refresh_account_button = Gtk.Button(label="Refresh account")
-        refresh_account_button.add_css_class("apple-id-action")
-        refresh_account_button.connect(
-            "clicked", lambda _button: self._schedule_auth_status()
-        )
-        account_actions.append(refresh_account_button)
-
-        account_menu.set_child(account_actions)
-        self.apple_id_menu.set_popover(account_menu)
-        apple_id_control.append(self.apple_id_menu)
-        surface.put(apple_id_control, 211, 151)
-
-        refresh_button = Gtk.Button()
-        refresh_button.add_css_class("refresh-button")
-        refresh_button.set_tooltip_text("Refresh")
-        refresh_icon = Gtk.Image.new_from_icon_name("view-refresh-symbolic")
-        refresh_icon.set_pixel_size(18)
-        refresh_button.set_child(refresh_icon)
-        refresh_button.set_size_request(35, 36)
-        surface.put(refresh_button, 17, 268)
-
-        start_button = Gtk.Button(label="Start")
-        start_button.add_css_class("start-button")
-        start_button.set_size_request(710, 28)
-        surface.put(start_button, 72, 273)
-
-        if self._development_preview:
-            reference_path = os.environ.get("XLOADER_REFERENCE_IMAGE")
-            reference_path = self._preview_reference_path or reference_path
-            if reference_path:
-                self._load_reference_image(reference_path)
-
-    def _add_preview_tools(self, overlay: Gtk.Overlay) -> None:
-        tools = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        tools.add_css_class("preview-tools")
-        tools.set_halign(Gtk.Align.END)
-        tools.set_valign(Gtk.Align.END)
-        tools.set_margin_end(10)
-        tools.set_margin_bottom(9)
-
-        choose_button = Gtk.Button(label="Reference image…")
-        choose_button.add_css_class("preview-tool-button")
-        choose_button.connect("clicked", self._choose_reference_image)
-        tools.append(choose_button)
-
-        self._preview_opacity_label = Gtk.Label(
-            label=f"{round(self._preview_opacity * 100)}%"
-        )
-        self._preview_opacity_label.add_css_class("preview-opacity-label")
-        tools.append(self._preview_opacity_label)
-
-        opacity_scale = Gtk.Scale.new_with_range(
-            Gtk.Orientation.HORIZONTAL,
-            0.0,
-            1.0,
-            0.01,
-        )
-        opacity_scale.add_css_class("preview-opacity-scale")
-        opacity_scale.set_size_request(105, -1)
-        opacity_scale.set_draw_value(False)
-        opacity_scale.set_value(self._preview_opacity)
-        opacity_scale.connect("value-changed", self._on_preview_opacity_changed)
-        tools.append(opacity_scale)
-
-        overlay.add_overlay(tools)
-
-    def _create_preview_divider(self) -> Gtk.Box:
-        hitbox = Gtk.Box()
-        hitbox.add_css_class("preview-divider-hitbox")
-        hitbox.set_halign(Gtk.Align.START)
-        hitbox.set_valign(Gtk.Align.FILL)
-        hitbox.set_size_request(15, -1)
-        hitbox.set_margin_start(max(0, self._preview_divider_x - 7))
-        hitbox.set_visible(False)
-        hitbox.set_tooltip_text("Drag to compare the reference with the live UI")
-
-        line = Gtk.Box()
-        line.add_css_class("preview-divider-line")
-        line.set_size_request(1, -1)
-        line.set_halign(Gtk.Align.CENTER)
-        line.set_valign(Gtk.Align.FILL)
-        hitbox.append(line)
-
-        drag = Gtk.GestureDrag()
-        drag.connect("drag-begin", self._on_preview_drag_begin)
-        drag.connect("drag-update", self._on_preview_drag_update)
-        drag.connect("drag-end", self._on_preview_drag_end)
-        hitbox.add_controller(drag)
-        return hitbox
-
-    def _choose_reference_image(self, _button: Gtk.Button) -> None:
-        dialog = Gtk.FileChooserNative.new(
-            "Choose reference design image",
-            self,
-            Gtk.FileChooserAction.OPEN,
-            "_Open",
-            "_Cancel",
-        )
-        image_filter = Gtk.FileFilter()
-        image_filter.set_name("Design images")
-        for pattern in ("*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"):
-            image_filter.add_pattern(pattern)
-        dialog.add_filter(image_filter)
-        dialog.connect("response", self._on_reference_image_selected)
-        dialog.show()
-
-    def _on_reference_image_selected(
-        self,
-        dialog: Gtk.FileChooserNative,
-        response: int,
-    ) -> None:
-        if response == Gtk.ResponseType.ACCEPT:
-            selected_file = dialog.get_file()
-            if selected_file is not None and selected_file.get_path():
-                self._load_reference_image(selected_file.get_path())
-        dialog.destroy()
-
-    def _load_reference_image(self, path: str) -> None:
-        try:
-            texture = Gdk.Texture.new_from_filename(str(Path(path).expanduser()))
-        except GLib.Error as error:
-            self._show_message("Could not load reference image", str(error))
-            return
-
-        for layer in (self._titlebar_reference_layer, self._body_reference_layer):
-            layer.texture = texture
-            layer.queue_draw()
-        self._preview_reference_path = str(Path(path).expanduser().resolve())
-        self._titlebar_divider_hitbox.set_visible(True)
-        self._body_divider_hitbox.set_visible(True)
-        self._save_preview_state()
-
-    def _on_preview_opacity_changed(self, scale: Gtk.Scale) -> None:
-        opacity = scale.get_value()
-        self._preview_opacity = opacity
-        self._preview_opacity_label.set_text(f"{round(opacity * 100)}%")
-        self._titlebar_reference_layer.opacity = opacity
-        self._body_reference_layer.opacity = opacity
-        self._titlebar_reference_layer.queue_draw()
-        self._body_reference_layer.queue_draw()
-        self._save_preview_state()
-
-    def _on_preview_drag_begin(
-        self,
-        _drag: Gtk.GestureDrag,
-        _start_x: float,
-        _start_y: float,
-    ) -> None:
-        self._preview_drag_origin = self._preview_divider_x
-
-    def _on_preview_drag_update(
-        self,
-        _drag: Gtk.GestureDrag,
-        offset_x: float,
-        _offset_y: float,
-    ) -> None:
-        width = max(self.get_width(), 2)
-        self._preview_divider_x = max(
-            1,
-            min(width - 1, round(self._preview_drag_origin + offset_x)),
-        )
-        for layer in (self._titlebar_reference_layer, self._body_reference_layer):
-            layer.divider_x = self._preview_divider_x
-            layer.queue_draw()
-        for hitbox in (self._titlebar_divider_hitbox, self._body_divider_hitbox):
-            hitbox.set_margin_start(max(0, self._preview_divider_x - 7))
-
-    def _on_preview_drag_end(
-        self,
-        _drag: Gtk.GestureDrag,
-        _offset_x: float,
-        _offset_y: float,
-    ) -> None:
-        self._save_preview_state()
-
-    def _read_preview_state(self) -> dict[str, object]:
-        if not self._development_preview:
-            return {}
-        try:
-            state = json.loads(self._preview_state_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            return {}
-        return state if isinstance(state, dict) else {}
+        self._hide_sensitive = True
+        self._selected_ipa_path: str | None = None
+        self._install_running = False
+        self._install_output: list[str] = []
+        self._status_text = "Ready"
+        self.setWindowTitle(APP_TITLE)
+        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setFixedSize(WIDTH, HEIGHT)
+        self._build()
+        self._refresh_devices()
+        self._refresh_auth_status()
+        self._device_timer = QTimer(self)
+        self._device_timer.timeout.connect(self._refresh_devices)
+        self._device_timer.start(3000)
 
     @staticmethod
-    def _bounded_number(
-        value: object,
-        *,
-        fallback: float,
-        minimum: float,
-        maximum: float,
-    ) -> float:
-        try:
-            number = float(value)
-        except (TypeError, ValueError):
-            return fallback
-        return max(minimum, min(maximum, number))
+    def _place(widget, x, y, w, h):
+        widget.setGeometry(x, y, w, h)
+        return widget
 
-    def _save_preview_state(self) -> None:
-        if not self._development_preview:
-            return
-        state = {
-            "image_path": self._preview_reference_path,
-            "opacity": self._preview_opacity,
-            "divider_x": self._preview_divider_x,
-        }
-        try:
-            self._preview_state_path.parent.mkdir(parents=True, exist_ok=True)
-            temporary_path = self._preview_state_path.with_suffix(".json.tmp")
-            temporary_path.write_text(
-                json.dumps(state, ensure_ascii=False),
-                encoding="utf-8",
-            )
-            temporary_path.replace(self._preview_state_path)
-        except OSError as error:
-            print(f"[preview] Could not save comparison settings: {error}", flush=True)
+    def _label(self, parent, name, text, x, y, w, h, align=Qt.AlignmentFlag.AlignLeft):
+        lbl = QLabel(text, parent)
+        lbl.setObjectName(name)
+        lbl.setAlignment(align | Qt.AlignmentFlag.AlignVCenter)
+        return self._place(lbl, x, y, w, h)
 
-    @staticmethod
-    def _make_device_button(
-        icon_name: str,
-        tooltip: str,
-        callback: object,
-    ) -> Gtk.Button:
-        button = Gtk.Button()
-        button.add_css_class("device-icon-button")
-        button.set_tooltip_text(tooltip)
-        icon = Gtk.Image.new_from_icon_name(icon_name)
-        icon.set_pixel_size(18)
-        button.set_child(icon)
-        button.set_size_request(42, 42)
-        button.connect("clicked", callback)
-        return button
+    def _build(self):
+        root = QFrame(self)
+        root.setObjectName("root")
+        root.setGeometry(0, 0, WIDTH, HEIGHT)
 
-    def _schedule_device_scan(self) -> bool:
-        if not self._device_scan_running:
-            self._device_scan_running = True
+        bar = QFrame(root)
+        bar.setObjectName("titleBar")
+        bar.setGeometry(1, 1, WIDTH - 2, TITLEBAR_H - 1)
 
-            def scan() -> None:
-                devices = self._device_service.list_usb_devices()
-                GLib.idle_add(self._on_device_scan_complete, devices)
-
-            threading.Thread(target=scan, name="xloader-device-scan", daemon=True).start()
-        return GLib.SOURCE_CONTINUE
-
-    def _on_device_scan_complete(self, devices: list[DeviceInfo]) -> bool:
-        self._device_scan_running = False
-        if devices != self._devices:
-            preferred_udid = self._selected_device.udid if self._selected_device else None
-            self._devices = devices
-            self._rebuild_device_dropdown(preferred_udid)
-        return GLib.SOURCE_REMOVE
-
-    def _rebuild_device_dropdown(self, preferred_udid: str | None = None) -> None:
-        labels = [self._format_device(device) for device in self._devices]
-        if not labels:
-            labels = [NO_DEVICE_TEXT]
-
-        selected_index = next(
-            (
-                index
-                for index, device in enumerate(self._devices)
-                if device.udid == preferred_udid
-            ),
+        title = self._label(
+            bar,
+            "titleLabel",
+            APP_TITLE,
             0,
+            0,
+            WIDTH - 2,
+            TITLEBAR_H - 1,
+            Qt.AlignmentFlag.AlignHCenter,
+        )
+        title.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+
+        self.btn_close = QPushButton(bar)
+        self.btn_close.setObjectName("trafficClose")
+        self.btn_min = QPushButton(bar)
+        self.btn_min.setObjectName("trafficMin")
+        self.btn_zoom = QPushButton(bar)
+        self.btn_zoom.setObjectName("trafficZoom")
+        self.btn_zoom.setEnabled(False)
+        for btn, x in ((self.btn_close, 15), (self.btn_min, 36), (self.btn_zoom, 57)):
+            btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            self._place(btn, x, 12, 12, 12)
+        self.btn_close.clicked.connect(self.close)
+        self.btn_min.clicked.connect(self.showMinimized)
+
+        self.ipa_icon = self._place(IpaIcon(root), 24, 69, 115, 143)
+        self.ipa_icon.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.ipa_icon.mousePressEvent = self._ipa_click
+        self.lbl_filename = self._label(root, "fileName", "", 14, 243, 135, 44, Qt.AlignmentFlag.AlignHCenter)
+        self.set_filename("")
+
+        self.lbl_device = self._label(root, "fieldLabel", "iDevice:", 175, 62, 140, 22)
+        self.btn_count = self._place(IconButton("people", dx=-18, parent=root), 607, 62, 75, 25)
+        self.btn_count.setObjectName("countBtn")
+        self.btn_count.setText("0")
+        self.btn_flag = self._place(IconButton("flag", parent=root), 704, 62, 64, 25)
+        self.btn_flag.setObjectName("flagBtn")
+        self.btn_count.clicked.connect(self._refresh_devices)
+        self.btn_flag.clicked.connect(self._show_engine_status)
+
+        self.combo_device = PurpleCombo("updown", btn_w=20, margin_x=3, margin_y=2, parent=root)
+        self.combo_device.setObjectName("deviceCombo")
+        self.combo_device.addItem(NO_DEVICE_TEXT)
+        self._place(self.combo_device, 183, 124, 404, 25)
+        self.combo_device.currentIndexChanged.connect(self._on_device_selected)
+
+        self.btn_gear = self._place(IconButton("gear", parent=root), 608, 119, 38, 34)
+        self.btn_gear.setObjectName("gearBtn")
+        self.btn_link = self._place(IconButton("link", parent=root), 654, 119, 38, 34)
+        self.btn_link.setObjectName("linkBtn")
+        self.btn_phone = self._place(IconButton("phone", parent=root), 698, 119, 36, 34)
+        self.btn_phone.setObjectName("phoneBtn")
+        self.btn_eye = self._place(IconButton("eye", parent=root), 743, 119, 36, 34)
+        self.btn_eye.setObjectName("eyeBtn")
+        self.btn_link.clicked.connect(self._copy_device_udid)
+        self.btn_phone.clicked.connect(self._repair_pairing)
+        self.btn_eye.clicked.connect(self._toggle_device_privacy)
+        self.btn_gear.clicked.connect(self._show_device_menu)
+
+        self.lbl_appleid = self._label(root, "fieldLabel", "Apple ID:", 175, 173, 140, 22)
+        self.combo_appleid = PurpleCombo("down", btn_w=22, margin_x=3, margin_y=3, parent=root)
+        self.combo_appleid.setObjectName("appleIdCombo")
+        self.combo_appleid.setEditable(True)
+        self.combo_appleid.lineEdit().setObjectName("appleIdEdit")
+        self.combo_appleid.addItem("Not signed in")
+        self._place(self.combo_appleid, 176, 209, 601, 28)
+
+        self.btn_advanced = self._place(QPushButton("Advanced Options", root), 176, 259, 601, 26)
+        self.btn_advanced.setObjectName("advancedBtn")
+        self.btn_advanced.clicked.connect(self._show_advanced_options)
+
+        self.btn_refresh = self._place(IconButton("refresh", parent=root), 14, 311, 34, 33)
+        self.btn_refresh.setObjectName("refreshBtn")
+        self.btn_refresh.clicked.connect(self._refresh_all)
+
+        self.btn_start = self._place(QPushButton("Start", root), 69, 314, 715, 27)
+        self.btn_start.setObjectName("startBtn")
+        self.btn_start.clicked.connect(self._start_install)
+        self.btn_swap = self._place(IconButton("updown", parent=root), 752, 373, 35, 35)
+        self.btn_swap.setObjectName("swapBtn")
+        self.btn_swap.clicked.connect(self._toggle_install_mode)
+
+        self.status_label = self._label(root, "statusLabel", "Ready", 176, 290, 600, 18)
+        self.status_label.setVisible(True)
+
+        for b in (self.btn_advanced, self.btn_start):
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        self._place(BrandIcon("twitter", root), 181, 374, 20, 20)
+        self.link_twitter = self._social(root, "@Xloader", 207, 375, 112)
+        self._place(BrandIcon("reddit", root), 314, 374, 20, 20)
+        self.link_reddit = self._social(root, "r/Xloader", 337, 375, 102)
+        self._place(BrandIcon("patreon", root), 439, 374, 20, 20)
+        self.link_patreon = self._social(root, "Xloader", 466, 375, 90)
+
+        self.link_twitter.clicked.connect(lambda: self._open("https://github.com/egokam/Xloader"))
+        self.link_reddit.clicked.connect(lambda: self._open("https://github.com/egokam/Xloader/discussions"))
+        self.link_patreon.clicked.connect(lambda: self._open("https://xtool.sh/"))
+
+        self._update_action_state()
+        self._set_status("Ready")
+
+    def _social(self, parent, text, x, y, w):
+        lbl = ClickLabel(text, parent)
+        lbl.setObjectName("socialLink")
+        font = lbl.font()
+        font.setUnderline(True)
+        lbl.setFont(font)
+        lbl.setCursor(Qt.CursorShape.PointingHandCursor)
+        return self._place(lbl, x, y, w, 20)
+
+    @staticmethod
+    def _open(url):
+        QDesktopServices.openUrl(QUrl(url))
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and event.position().y() < TITLEBAR_H and self.windowHandle():
+            self.windowHandle().startSystemMove()
+        super().mousePressEvent(event)
+
+    def _ipa_click(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._choose_ipa_file()
+
+    def set_filename(self, value: str) -> None:
+        safe_value = value or ""
+        self.lbl_filename.setText(safe_value)
+        self.lbl_filename.setProperty("empty", not bool(safe_value))
+        self.lbl_filename.style().unpolish(self.lbl_filename)
+        self.lbl_filename.style().polish(self.lbl_filename)
+
+    def _set_status(self, text: str) -> None:
+        self._status_text = text or "Ready"
+        self.status_label.setText(self._status_text)
+
+    def _show_device_menu(self) -> None:
+        menu = QMenu(self)
+        menu.addAction("Refresh connected devices", self._refresh_devices)
+        menu.addAction("Repair device pairing", self._repair_pairing)
+        menu.addAction("Copy device identifier", self._copy_device_udid)
+        menu.exec(self.btn_gear.mapToGlobal(self.btn_gear.rect().bottomLeft()))
+
+    def _show_advanced_options(self) -> None:
+        QMessageBox.information(
+            self,
+            "Advanced options",
+            "Connection: USB\nSigning: xtool automatic\nHide device IDs is enabled by default.",
         )
 
-        self._updating_device_dropdown = True
-        self.device_dropdown.set_model(Gtk.StringList.new(labels))
-        self.device_dropdown.set_selected(selected_index)
-        self._updating_device_dropdown = False
-        self._selected_device = (
-            self._devices[selected_index] if self._devices else None
-        )
+    def _toggle_install_mode(self) -> None:
+        self._set_status("Refresh mode selected")
+
+    def _refresh_all(self) -> None:
+        self._refresh_devices()
+        self._refresh_auth_status()
+
+    def _refresh_devices(self) -> None:
+        def worker() -> None:
+            devices = self._device_service.list_usb_devices()
+            QTimer.singleShot(0, lambda: self._apply_devices(devices))
+
+        threading.Thread(target=worker, name="xloader-devices", daemon=True).start()
+
+    def _apply_devices(self, devices: list[DeviceInfo]) -> None:
+        self._devices = devices
+        self.btn_count.setText(str(len(devices)))
+        if not devices:
+            self.combo_device.clear()
+            self.combo_device.addItem(NO_DEVICE_TEXT)
+            self._selected_device = None
+            self._update_action_state()
+            return
+
+        current = self._selected_device.udid if self._selected_device else None
+        items = []
+        for device in devices:
+            label = self._format_device(device)
+            items.append(label)
+        self.combo_device.blockSignals(True)
+        self.combo_device.clear()
+        self.combo_device.addItems(items)
+        self.combo_device.blockSignals(False)
+
+        if current is not None:
+            for idx, device in enumerate(devices):
+                if device.udid == current:
+                    self.combo_device.setCurrentIndex(idx)
+                    break
+        else:
+            self.combo_device.setCurrentIndex(0)
+
+        self._selected_device = devices[self.combo_device.currentIndex()] if self.combo_device.currentIndex() < len(devices) else None
+        self._update_action_state()
+
+    def _on_device_selected(self, index: int) -> None:
+        if index < 0 or index >= len(self._devices):
+            self._selected_device = None
+            self._update_action_state()
+            return
+        self._selected_device = self._devices[index]
+        self._update_action_state()
 
     def _format_device(self, device: DeviceInfo) -> str:
-        identity = f"{device.name} ({device.model})"
-        identifier = (
-            "*" * 16 if self._hide_sensitive_device_info else device.udid
-        )
-        return f"{identity}  {identifier}"
+        identifier = "********" if self._hide_sensitive else device.udid
+        return f"{device.name} ({device.model})  {identifier}"
 
-    def _on_device_selected(self, _dropdown: Gtk.DropDown, _parameter: object) -> None:
-        if self._updating_device_dropdown:
-            return
-        selected_index = self.device_dropdown.get_selected()
-        self._selected_device = (
-            self._devices[selected_index]
-            if selected_index < len(self._devices)
-            else None
+    def _update_action_state(self) -> None:
+        has_device = self._selected_device is not None
+        self.btn_link.setEnabled(has_device)
+        self.btn_phone.setEnabled(has_device)
+        self.btn_start.setEnabled(
+            has_device and self._selected_ipa_path is not None and self._xtool_service.available and not self._install_running
         )
 
-    def _copy_device_udid(self, _button: Gtk.Button) -> None:
-        if self._selected_device is None:
-            return
-        display = Gdk.Display.get_default()
-        if display is not None:
-            display.get_clipboard().set(self._selected_device.udid)
-
-    def _toggle_device_privacy(self, _button: Gtk.Button) -> None:
-        self._hide_sensitive_device_info = not self._hide_sensitive_device_info
+    def _copy_device_udid(self) -> None:
         device = self._selected_device
-        self._rebuild_device_dropdown(device.udid if device else None)
-        image = self.privacy_button.get_child()
-        if isinstance(image, Gtk.Image):
-            image.set_from_icon_name(
-                "view-conceal-symbolic"
-                if self._hide_sensitive_device_info
-                else "view-reveal-symbolic"
-            )
-        self.privacy_button.set_tooltip_text(
-            "Show sensitive device information"
-            if self._hide_sensitive_device_info
-            else "Hide sensitive device information"
-        )
+        if device is None:
+            return
+        QApplication.clipboard().setText(device.udid)
+        self._set_status(f"Copied device ID for {device.name}")
 
-    def _repair_device_pairing(self, _button: Gtk.Button) -> None:
+    def _toggle_device_privacy(self) -> None:
+        self._hide_sensitive = not self._hide_sensitive
+        self._apply_devices(self._devices)
+        self._set_status("Device identifier privacy is now " + ("hidden" if self._hide_sensitive else "visible"))
+
+    def _repair_pairing(self) -> None:
         device = self._selected_device
-        if device is None or self._pairing_in_progress:
+        if device is None:
             return
 
-        self._pairing_in_progress = True
-        self.repair_device_button.set_sensitive(False)
-
-        def repair() -> None:
+        def worker() -> None:
             success, message = self._device_service.repair_pairing(device.udid)
-            GLib.idle_add(self._on_pairing_complete, success, message)
+            QTimer.singleShot(0, lambda: self._repair_done(success, message))
 
-        threading.Thread(target=repair, name="xloader-device-pair", daemon=True).start()
+        threading.Thread(target=worker, name="xloader-pairing", daemon=True).start()
 
-    def _on_pairing_complete(self, success: bool, message: str) -> bool:
-        self._pairing_in_progress = False
-        self.repair_device_button.set_sensitive(self._selected_device is not None)
-        dialog = Gtk.AlertDialog()
-        dialog.set_message("Device paired" if success else "Could not pair device")
-        dialog.set_detail(message)
-        dialog.set_buttons(["OK"])
-        dialog.set_default_button(0)
-        dialog.show(self)
-        return GLib.SOURCE_REMOVE
+    def _repair_done(self, success: bool, message: str) -> None:
+        status = "Device paired" if success else "Could not pair device"
+        QMessageBox.information(self, status, message)
+        self._set_status(status)
 
-    def _schedule_auth_status(self) -> bool:
-        if not self._auth_status_running:
-            self._auth_status_running = True
+    def _refresh_auth_status(self) -> None:
+        def worker() -> None:
+            status = self._xtool_service.auth_status()
+            QTimer.singleShot(0, lambda: self._apply_auth_status(status))
 
-            def check_status() -> None:
-                status = self._xtool_service.auth_status()
-                GLib.idle_add(self._on_auth_status_complete, status)
+        threading.Thread(target=worker, daemon=True).start()
 
-            threading.Thread(
-                target=check_status,
-                name="xloader-auth-status",
-                daemon=True,
-            ).start()
-        return GLib.SOURCE_CONTINUE
-
-    def _on_auth_status_complete(self, status: AuthStatus) -> bool:
-        self._auth_status_running = False
-        self._auth_signed_in = status.signed_in
+    def _apply_auth_status(self, status: AuthStatus) -> None:
         if status.signed_in:
-            self.apple_id_entry.set_text(status.apple_id or "Signed in")
+            value = status.apple_id or "Signed in"
+            self.combo_appleid.blockSignals(True)
+            self.combo_appleid.clear()
+            self.combo_appleid.addItem(value)
+            self.combo_appleid.blockSignals(False)
             details = []
             if status.team_id:
                 details.append(f"Team ID: {status.team_id}")
             if status.token_expiry:
                 details.append(f"Token expiry: {status.token_expiry}")
-            self.apple_id_entry.set_tooltip_text("\n".join(details) or None)
-        elif not self._xtool_service.available:
-            self.apple_id_entry.set_placeholder_text("Signing engine unavailable")
-            self.apple_id_entry.set_tooltip_text(status.error)
+            self.combo_appleid.setToolTip("\n".join(details) if details else "Signed in")
+            self._set_status("Apple account ready")
         else:
-            self.apple_id_entry.set_text("")
-            self.apple_id_entry.set_placeholder_text("Not signed in")
-            self.apple_id_entry.set_tooltip_text(status.error)
+            self.combo_appleid.blockSignals(True)
+            self.combo_appleid.clear()
+            self.combo_appleid.addItem("Not signed in")
+            self.combo_appleid.blockSignals(False)
+            self.combo_appleid.setToolTip(status.error or "Not signed in")
+            self._set_status(status.error or "Apple ID not signed in")
 
-        self.sign_in_button.set_sensitive(self._xtool_service.available)
-        self.sign_out_button.set_sensitive(status.signed_in)
-        return GLib.SOURCE_REMOVE
-
-    def _sign_in_to_apple(self, _button: Gtk.Button) -> None:
-        message = self._xtool_service.open_login_terminal()
-        if message:
-            self._show_message("Could not start Apple sign-in", message)
-            return
-        self.apple_id_entry.set_text("")
-        self.apple_id_entry.set_placeholder_text("Complete sign-in in the terminal…")
-
-    def _sign_out_of_apple(self, _button: Gtk.Button) -> None:
-        self.sign_out_button.set_sensitive(False)
-
-        def completed(success: bool, message: str | None) -> None:
-            GLib.idle_add(self._on_sign_out_complete, success, message)
-
-        self._xtool_service.logout(completed)
-
-    def _on_sign_out_complete(self, success: bool, message: str | None) -> bool:
-        if success:
-            self._auth_signed_in = False
-            self.apple_id_entry.set_text("")
-            self.apple_id_entry.set_placeholder_text("Not signed in")
-            self.apple_id_entry.set_tooltip_text(None)
-            self.sign_out_button.set_sensitive(False)
+    def _show_engine_status(self) -> None:
+        if self._xtool_service.available:
+            QMessageBox.information(self, "Signing engine ready", f"Xtool found at:\n{self._xtool_service.executable}")
         else:
-            self.sign_out_button.set_sensitive(self._auth_signed_in)
-            self._show_message(
-                "Could not sign out",
-                message or "Xloader could not end the Apple ID session.",
-            )
-        return GLib.SOURCE_REMOVE
+            QMessageBox.warning(self, "Signing engine missing", "Xtool is unavailable. Install the bundled runtime or set XLOADER_XTOOL.")
 
-    def _show_message(self, title: str, detail: str) -> None:
-        dialog = Gtk.AlertDialog()
-        dialog.set_message(title)
-        dialog.set_detail(detail)
-        dialog.set_buttons(["OK"])
-        dialog.set_default_button(0)
-        dialog.show(self)
-
-    def _choose_ipa_file(self, _button: Gtk.Button) -> None:
-        dialog = Gtk.FileChooserNative.new(
-            "Choose an IPA file",
+    def _choose_ipa_file(self) -> None:
+        ipa_path, _ = QFileDialog.getOpenFileName(
             self,
-            Gtk.FileChooserAction.OPEN,
-            "_Open",
-            "_Cancel",
+            "Select IPA",
+            str(Path.home()),
+            "iOS app (*.ipa)",
         )
-        ipa_filter = Gtk.FileFilter()
-        ipa_filter.set_name("iOS app packages (*.ipa)")
-        ipa_filter.add_pattern("*.ipa")
-        ipa_filter.add_pattern("*.IPA")
-        dialog.add_filter(ipa_filter)
-        dialog.connect("response", self._on_ipa_file_selected)
-        dialog.show()
+        if not ipa_path:
+            return
+        self._selected_ipa_path = ipa_path
+        self.set_filename(Path(ipa_path).name)
+        self._set_status(f"Selected {Path(ipa_path).name}")
+        self._update_action_state()
 
-    def _on_ipa_file_selected(
-        self,
-        dialog: Gtk.FileChooserNative,
-        response: int,
-    ) -> None:
-        if response == Gtk.ResponseType.ACCEPT:
-            selected_file = dialog.get_file()
-            if selected_file is not None:
-                filename = selected_file.get_basename()
-                if filename:
-                    self.ipa_name_label.set_text(Path(filename).stem)
-        dialog.destroy()
+    def _start_install(self) -> None:
+        if self._install_running:
+            return
+        if self._selected_device is None:
+            QMessageBox.warning(self, "No device selected", "Connect an iPhone via USB and select it before installing.")
+            return
+        if not self._selected_ipa_path:
+            self._choose_ipa_file()
+            if not self._selected_ipa_path:
+                return
+        if not self._xtool_service.available:
+            QMessageBox.warning(self, "Xtool unavailable", "The signing engine could not be found. Set XLOADER_XTOOL or install the bundled runtime.")
+            return
+
+        self._install_running = True
+        self.btn_start.setEnabled(False)
+        self.btn_start.setText("Installing…")
+        self._install_output = []
+
+        def on_output(line: str) -> None:
+            self._install_output.append(line)
+            if line:
+                QTimer.singleShot(0, lambda: self._set_status(line))
+
+        def on_complete(exit_code: int) -> None:
+            QTimer.singleShot(0, lambda: self._install_finished(exit_code))
+
+        self._xtool_service.install_ipa(self._selected_ipa_path, on_output, on_complete)
+
+    def _install_finished(self, exit_code: int) -> None:
+        self._install_running = False
+        self.btn_start.setEnabled(self._selected_device is not None and self._selected_ipa_path is not None and self._xtool_service.available)
+        self.btn_start.setText("Start")
+        if exit_code == 0:
+            message = f"{Path(self._selected_ipa_path or '').name} was installed successfully."
+            QMessageBox.information(self, "Installation complete", message)
+            self._set_status("Install complete")
+        else:
+            details = "\n".join(self._install_output[-6:]) or "Xtool exited before it could finish the install."
+            QMessageBox.warning(self, "Could not install app", details)
+            self._set_status("Install failed")
+
+
+
+MainWindow = SideloadlyWindow
+
+
+if __name__ == "__main__":
+    app = QApplication([])
+    app.setApplicationName("Xloader")
+    app.setOrganizationName("Xloader")
+    app.setStyle("Fusion")
+    window = SideloadlyWindow()
+    window.show()
+    app.exec()

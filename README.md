@@ -50,14 +50,14 @@ Wireless refresh is out of the current MVP. The chosen workflow uses a USB cable
 
 ## Desktop implementation
 
-- Use Python 3 with GTK 4 for the Linux desktop shell and native file selection.
+- Use Python 3 with PySide6 for the Linux desktop shell and native file selection.
 - Call xtool as a child process for USB device discovery and IPA installation; keep output streaming so progress stays visible.
 - Use the compact Sideloadly-inspired layout, charcoal surfaces, gray controls, a purple Apple ID focus edge, and short fade transitions.
 - Keep the first version dependency-light and runnable from the cloned repository.
 
 ### Current prototype
 
-The GTK window uses a fixed 800 × 420 compact desktop layout with a thin titlebar and charcoal Sideloadly-inspired controls. It detects an iPhone over USB, lets you browse for or drop an IPA, and runs `xtool install --usb` while showing streamed deployment stages and sanitized logs. The Apple ID field shows the saved account, team, and token expiry. Sign-in opens xtool's login flow in a terminal, while sign-out runs through xtool; Xloader does not collect or store Apple ID passwords. Install results use concise dialogs, with full sanitized output available on request. Refreshing currently means selecting the IPA again and reinstalling it. Installed-app inventory and automatic refresh scheduling are future work.
+The PySide6 window follows the supplied 800 × 427 Sideloadly-inspired mockup, with a custom gray titlebar, charcoal controls, and fixed pixel coordinates. It detects an iPhone over USB, lets you choose an IPA, and runs `xtool install --usb` while showing streamed deployment stages. The Apple ID field shows the saved account, team, and token expiry. Sign-in opens xtool's login flow in a terminal, while sign-out runs through xtool; Xloader does not collect or store Apple ID passwords. Install results use concise dialogs, and displayed device identifiers and command output are sanitized. Refreshing currently means selecting the IPA again and reinstalling it. Installed-app inventory and automatic refresh scheduling are future work.
 
 ## Project principles
 
@@ -68,7 +68,7 @@ The GTK window uses a fixed 800 × 420 compact desktop layout with a thin titleb
 
 ## Run from source
 
-Requirements: Python 3, PyGObject with GTK 4.10 or newer, `libimobiledevice`, and a USB device service (`usbmuxd`). Xloader uses `idevice_id` and `ideviceinfo` to identify connected USB devices. When running from a source checkout, `XLOADER_XTOOL` can explicitly select a development runtime; otherwise Xloader prefers a bundled runtime before checking `~/.local/bin/xtool` and `PATH`.
+Requirements: Python 3, PySide6, `libimobiledevice`, and a USB device service (`usbmuxd`). Xloader uses `idevice_id` and `ideviceinfo` to identify connected USB devices. When running from a source checkout, `XLOADER_XTOOL` can explicitly select a development runtime; otherwise Xloader prefers a bundled runtime before checking `~/.local/bin/xtool` and `PATH`.
 
 From the repository root:
 
@@ -86,7 +86,7 @@ Run the preview watcher while editing the interface:
 python3 scripts/dev-preview.py
 ```
 
-Stylesheet changes apply to the open window. Changes to Python files restart the window automatically. Close the app window to stop the watcher, or press `Ctrl+C` in the terminal. The signing engine is optional for previewing the interface; without xtool, install actions remain unavailable.
+Stylesheet changes apply to the open window. Changes to Python files restart the window automatically. Close the app window to stop the watcher, or press `Ctrl+C` in the terminal. The selected image, opacity, and divider position persist across those restarts. The signing engine is optional for previewing the interface; without xtool, install actions remain unavailable.
 
 In preview mode, choose **Reference image…** to overlay a design image. Drag the vertical divider to compare the image on the left with the live UI on the right, and use the slider to adjust its opacity. The selected image, opacity, and divider position are saved under the user cache directory and restored after Python-triggered restarts. You can also preload an image on launch:
 
@@ -104,7 +104,7 @@ Build a native package from this checkout:
 ./scripts/build-arch-package.sh
 ```
 
-The package is written to `dist/`. It contains Xloader and the pinned xtool 1.22.2 Linux runtime. GTK 4, PyGObject, and `usbmuxd` are declared as package dependencies, so Pacman installs any missing system components when the package is installed. Install the generated package with:
+The package is written to `dist/`. It contains Xloader and the pinned xtool 1.22.2 Linux runtime. PySide6, `libimobiledevice`, and `usbmuxd` are declared as package dependencies, so Pacman installs any missing system components when the package is installed. Install the generated package with:
 
 ```sh
 sudo pacman -U dist/xloader-0.1.0-1-$(uname -m).pkg.tar.zst

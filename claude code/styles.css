@@ -1,0 +1,191 @@
+/* ==========================================================================
+   styles.css — Sideloadly-style window (800x427)
+   Qt stylesheet (QSS): the CSS subset that Qt widgets understand.
+   Fonts are set in window.py (families fallback list); sizes/weights here.
+   ========================================================================== */
+
+/* ---------- Window frame ------------------------------------------------- */
+QFrame#root {
+    background: #2c2c2c;
+    border: 1px solid #161616;
+    border-radius: 10px;
+}
+
+/* ---------- Title bar ---------------------------------------------------- */
+QFrame#titleBar {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #444444, stop:1 #353535);
+    border: none;
+    border-bottom: 1px solid #1d1d1d;
+    border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+QLabel#titleLabel {
+    background: transparent;
+    color: #dcdcdc;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* Traffic lights */
+QPushButton#trafficClose,
+QPushButton#trafficMin,
+QPushButton#trafficZoom {
+    border-radius: 6px;
+    padding: 0px;
+    min-width: 12px;  max-width: 12px;
+    min-height: 12px; max-height: 12px;
+}
+QPushButton#trafficClose        { background: #ff5f57; border: 1px solid #dc4a43; }
+QPushButton#trafficClose:hover  { background: #ff7770; }
+QPushButton#trafficClose:pressed{ background: #d9443d; }
+QPushButton#trafficMin          { background: #febc2e; border: 1px solid #d99f22; }
+QPushButton#trafficMin:hover    { background: #ffc94f; }
+QPushButton#trafficMin:pressed  { background: #d9a025; }
+QPushButton#trafficZoom         { background: #4a4a4a; border: 1px solid #3a3a3a; }
+
+/* ---------- IPA icon placeholder ---------------------------------------- */
+QFrame#ipaBox {
+    background: #3b3b3b;
+    border: 1px solid #5c5c5c;
+}
+
+QLabel#fileName {
+    background: transparent;
+    color: #ffffff;
+    font-size: 15px;
+}
+
+/* ---------- Field labels ------------------------------------------------- */
+QLabel#fieldLabel {
+    background: transparent;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* ---------- Top-right small buttons ------------------------------------- */
+QPushButton#countBtn,
+QPushButton#flagBtn {
+    background: #5b5b5b;
+    border: none;
+    border-radius: 4px;
+    color: #f2f2f2;
+    font-size: 15px;
+    qproperty-iconColor: #e6e6e6;
+}
+QPushButton#countBtn { padding-left: 24px; }
+QPushButton#flagBtn  { qproperty-iconColor: #ef3b43; }
+QPushButton#countBtn:hover,
+QPushButton#flagBtn:hover   { background: #666666; }
+QPushButton#countBtn:pressed,
+QPushButton#flagBtn:pressed { background: #505050; }
+
+/* ---------- Device row icon buttons ------------------------------------- */
+QPushButton#gearBtn,
+QPushButton#linkBtn,
+QPushButton#phoneBtn {
+    background: #4d4d4d;
+    border: 1px solid #5a5a5a;
+    border-radius: 5px;
+    qproperty-iconColor: #f0f0f0;
+}
+QPushButton#gearBtn:hover,
+QPushButton#phoneBtn:hover   { background: #595959; }
+QPushButton#gearBtn:pressed,
+QPushButton#phoneBtn:pressed { background: #444444; }
+QPushButton#linkBtn:disabled { background: #3a3a3a; border: 1px solid #444444; }
+
+QPushButton#eyeBtn {
+    background: #dcdcdc;
+    border: 1px solid #efefef;
+    border-radius: 5px;
+    qproperty-iconColor: #2e2e2e;
+}
+QPushButton#eyeBtn:hover   { background: #ebebeb; }
+QPushButton#eyeBtn:pressed { background: #c8c8c8; }
+
+/* ---------- Combo boxes -------------------------------------------------- */
+QComboBox {
+    font-size: 15px;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 26px;
+    subcontrol-origin: padding;
+    subcontrol-position: right center;
+}
+QComboBox::down-arrow {
+    image: none;
+    width: 0px;
+    height: 0px;
+}
+QComboBox QAbstractItemView {
+    background: #3a3a3a;
+    color: #eeeeee;
+    border: 1px solid #1f1f1f;
+    selection-background-color: #5b57d1;
+    selection-color: #ffffff;
+    outline: 0;
+}
+
+QComboBox#deviceCombo {
+    background: #6a6a6a;
+    color: #f4f4f4;
+    border: none;
+    border-radius: 5px;
+    padding-left: 11px;
+}
+
+QComboBox#appleIdCombo {
+    background: #262628;
+    border: 2px solid #615d9f;
+    border-radius: 5px;
+    padding-left: 3px;
+}
+QLineEdit#appleIdEdit {
+    background: transparent;
+    border: none;
+    color: #7c7c80;
+    font-size: 15px;
+    selection-background-color: #5b57d1;
+    selection-color: #ffffff;
+}
+
+/* ---------- Main action buttons ----------------------------------------- */
+QPushButton#advancedBtn,
+QPushButton#startBtn {
+    background: #5b5b5b;
+    border: none;
+    border-radius: 5px;
+    color: #e8e8e8;
+    font-size: 15px;
+}
+QPushButton#advancedBtn:hover,
+QPushButton#startBtn:hover   { background: #666666; }
+QPushButton#advancedBtn:pressed,
+QPushButton#startBtn:pressed { background: #4d4d4d; }
+QPushButton#startBtn:disabled { color: #8a8a8a; background: #4a4a4a; }
+
+/* ---------- Square corner buttons --------------------------------------- */
+QPushButton#refreshBtn,
+QPushButton#swapBtn {
+    background: #4b4b4b;
+    border: 1px solid #5d5d5d;
+    border-radius: 5px;
+    qproperty-iconColor: #f0f0f0;
+}
+QPushButton#refreshBtn:hover,
+QPushButton#swapBtn:hover   { background: #575757; }
+QPushButton#refreshBtn:pressed,
+QPushButton#swapBtn:pressed { background: #404040; }
+
+/* ---------- Social links ------------------------------------------------- */
+QLabel#socialLink {
+    background: transparent;
+    color: #1717ff;
+    font-size: 15px;
+}
