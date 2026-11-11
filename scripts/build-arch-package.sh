@@ -80,6 +80,8 @@ package() {
     install -Dm755 "\$pkgdir/usr/lib/xloader/packaging/arch/xloader" "\$pkgdir/usr/bin/xloader"
     install -Dm644 "\$pkgdir/usr/lib/xloader/packaging/arch/xloader.desktop" \\
         "\$pkgdir/usr/share/applications/xloader.desktop"
+    install -Dm644 "\$pkgdir/usr/lib/xloader/xloader/assets/app-icon.svg" \\
+        "\$pkgdir/usr/share/icons/hicolor/scalable/apps/xloader.svg"
     install -Dm644 "\$pkgdir/usr/lib/xloader/licenses/xtool-LICENSE.md" \\
         "\$pkgdir/usr/share/licenses/xloader/xtool-LICENSE.md"
     rm -rf "\$pkgdir/usr/lib/xloader/packaging" "\$pkgdir/usr/lib/xloader/licenses"
